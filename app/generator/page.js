@@ -88,15 +88,30 @@ export default function GeneratorPage() {
                 <button onClick={() => setMaskedLink("")} className="text-[10px] font-bold text-indigo-600">Create New</button>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                <input readOnly value={maskedLink} className="flex-1 w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 text-sm font-bold font-mono text-slate-700 shadow-inner overflow-hidden truncate" />
-                <button 
-                  onClick={copyToClipboard} 
-                  className={`w-full sm:w-auto px-8 py-4 text-white rounded-xl text-xs font-black transition-all shadow-lg active:scale-95 ${copied ? 'bg-emerald-500' : 'bg-slate-900 hover:bg-slate-800'}`}
-                >
-                  {copied ? 'Copied! ✨' : 'Copy Link'}
-                </button>
-              </div>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className={`flex-1 w-full border rounded-xl px-4 py-4 text-sm font-bold font-mono shadow-inner overflow-hidden truncate ${maskedLink === "PREVIEW_MODE" ? 'bg-amber-50 border-amber-200 text-amber-700 italic' : 'bg-slate-50 border-slate-100 text-slate-700'}`}>
+                    {maskedLink === "PREVIEW_MODE" ? "is.gd/[tool_name]_active_on_vercel" : maskedLink.replace("https://", "")}
+                  </div>
+                  <button 
+                    onClick={maskedLink === "PREVIEW_MODE" ? null : copyToClipboard} 
+                    disabled={maskedLink === "PREVIEW_MODE"}
+                    className={`w-full sm:w-auto px-8 py-4 text-white rounded-xl text-xs font-black transition-all shadow-lg active:scale-95 ${maskedLink === "PREVIEW_MODE" ? 'bg-slate-300 cursor-not-allowed' : copied ? 'bg-emerald-500' : 'bg-slate-900 hover:bg-slate-800'}`}
+                  >
+                    {maskedLink === "PREVIEW_MODE" ? 'Link Locked' : copied ? 'Copied! ✨' : 'Copy Link'}
+                  </button>
+                </div>
+                {maskedLink === "PREVIEW_MODE" ? (
+                  <div className="mt-4 p-4 rounded-xl bg-amber-100 border-2 border-amber-200 animate-pulse">
+                    <p className="text-[11px] text-amber-900 font-black leading-tight flex items-center gap-2">
+                       ⚠️ DEVELOPER SYSTEM NOTICE:
+                    </p>
+                    <p className="text-[10px] text-amber-800 mt-2 font-bold leading-relaxed">
+                      You are currently on <span className="underline">localhost</span>. <br/>
+                      Shortening services cannot see your private computer, so they cannot create real links yet. <br/><br/>
+                      <span className="text-black bg-white px-1.5 py-0.5 rounded">To fix this:</span> Push your code to your **Vercel domain**. This "Locked" box will then automatically turn into a real working link!
+                    </p>
+                  </div>
+                ) : null}
             </div>
           </div>
         )}
