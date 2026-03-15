@@ -8,7 +8,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // Extract tool name from URL (e.g., from .../pubg-82k1)
+    // Extract tool name for naming (e.g., from .../pubg-82k1)
     const urlParts = url.split("/");
     const lastPart = urlParts[urlParts.length - 1];
     const toolName = lastPart.split("-")[0] || "link";
@@ -19,26 +19,37 @@ export async function POST(req) {
     if (url.includes("localhost") || url.includes("127.0.0.1")) {
       return NextResponse.json({ 
         shortUrl: "PREVIEW_MODE",
-        notice: "Localhost detected. Real links only work on live domains like Vercel."
+        notice: "Localhost detected. Real links work on live domains."
       });
     }
 
     try {
-      // Step 1: Attempt is.gd with custom name
-      const isGdUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(url)}&shorturl=${encodeURIComponent(preferredName)}`;
-      const isGdRes = await fetch(isGdUrl);
-      const isGdData = await isGdRes.json();
-
-      if (isGdData.shorturl) {
-        return NextResponse.json({ shortUrl: isGdData.shorturl });
+      console.log(`Starting shortening for: ${url}`);
+      
+      // Step 1: Try TinyURL First (Highly reliable and rarely blocked by ISPs)
+      try {
+        const tinyRes = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
+        const tinyUrl = await tinyRes.text();
+        if (tinyUrl && tinyUrl.startsWith("http")) {
+          console.log(`TinyURL Success: ${tinyUrl}`);
+          return NextResponse.json({ shortUrl: tinyUrl });
+        }
+      } catch (e) {
+        console.error("TinyURL attempt failed:", e);
       }
 
-      // Step 2: Fallback to TinyURL (very reliable)
-      const tinyUrlRes = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
-      const tinyUrl = await tinyUrlRes.text();
-
-      if (tinyUrl && tinyUrl.startsWith("http")) {
-        return NextResponse.json({ shortUrl: tinyUrl });
+      // Step 2: Try is.gd with custom tool name
+      try {
+        const isGdUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(url)}&shorturl=${encodeURIComponent(preferredName)}`;
+        const isGdRes = await fetch(isGdUrl);
+        const isGdData = await isGdRes.json();
+        
+        if (isGdData.shorturl) {
+          console.log(`is.gd Success: ${isGdData.shorturl}`);
+          return NextResponse.json({ shortUrl: isGdData.shorturl });
+        }
+      } catch (e) {
+        console.error("is.gd custom attempt failed:", e);
       }
 
       // Step 3: Last resort random is.gd
@@ -49,11 +60,11 @@ export async function POST(req) {
         return NextResponse.json({ shortUrl: finalData.shorturl });
       }
 
-      return NextResponse.json({ error: "All shortening services failed. Please try again." }, { status: 500 });
+      return NextResponse.json({ error: "All shortening services failed. The domain might be blocked by shorteners." }, { status: 500 });
 
     } catch (error) {
       console.error("Shortening API Error:", error);
-      return NextResponse.json({ error: "Could not connect to shortening services" }, { status: 500 });
+      return NextResponse.json({ error: "Shortening service connection failure" }, { status: 500 });
     }
   } catch (outerError) {
     console.error("Outer Shortening error:", outerError);
