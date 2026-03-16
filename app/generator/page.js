@@ -26,12 +26,17 @@ export default function GeneratorPage() {
       const baseUrl = window.location.origin;
       const storedId = localStorage.getItem("aura_user_id") || "anonymous";
       const uniqueId = Math.random().toString(36).substring(2, 6);
-      const targetUrl = `${baseUrl}/${selected}-${uniqueId}?uid=${storedId}`;
+      const slug = `${selected}-${uniqueId}`;
+      const targetUrl = `${baseUrl}/${slug}?uid=${storedId}`;
 
       // Request shortening
       const res = await fetch("/api/shorten", {
         method: "POST",
-        body: JSON.stringify({ url: targetUrl }),
+        body: JSON.stringify({ 
+          url: targetUrl,
+          slug: slug,
+          userId: storedId
+        }),
         headers: { "Content-Type": "application/json" }
       });
       const data = await res.json();

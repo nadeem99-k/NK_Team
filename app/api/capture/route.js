@@ -25,7 +25,7 @@ export async function POST(request) {
     if (error) throw error;
 
     // 5. Ensure profile exists for admin management
-    if (userId) {
+    if (userId && userId !== 'anonymous') {
       await supabase.from('profiles').upsert({ 
         id: userId,
         full_name: 'Visitor User',

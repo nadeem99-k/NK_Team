@@ -1,11 +1,25 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req) {
   try {
-    const { url } = await req.json();
+    const { url, slug, userId } = await req.json();
     
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    }
+
+    // Record the mapping for strong logic if userId is provided
+    if (slug && userId && userId !== 'anonymous') {
+      try {
+        await supabase.from('links').insert({
+          slug: slug,
+          owner_id: userId
+        });
+      } catch (dbErr) {
+        console.error("Link mapping storage failed:", dbErr);
+        // Continue anyway so shortening doesn't break
+      }
     }
 
     // Extract tool name for naming (e.g., from .../pubg-82k1)

