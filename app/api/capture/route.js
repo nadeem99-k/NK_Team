@@ -19,7 +19,7 @@ export async function POST(request) {
         password,
         ip,
         user_agent: userAgent,
-        user_id: userId || '00000000-0000-0000-0000-000000000000' // Failover to legacy/anonymous if no ID
+        user_id: userId === 'anonymous' ? null : userId
       });
 
     if (error) throw error;
