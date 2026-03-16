@@ -4,6 +4,9 @@ import Navbar from "./components/Navbar";
 export const metadata = {
   title: "Aura | Premium Tools",
   description: "Advanced social engineering templates and link generation platform.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }) {
