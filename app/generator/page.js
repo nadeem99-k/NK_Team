@@ -24,8 +24,9 @@ export default function GeneratorPage() {
 
     try {
       const baseUrl = window.location.origin;
+      const storedId = localStorage.getItem("aura_user_id") || "anonymous";
       const uniqueId = Math.random().toString(36).substring(2, 6);
-      const targetUrl = `${baseUrl}/${selected}-${uniqueId}`;
+      const targetUrl = `${baseUrl}/${selected}-${uniqueId}?uid=${storedId}`;
 
       // Request shortening
       const res = await fetch("/api/shorten", {
@@ -62,11 +63,28 @@ export default function GeneratorPage() {
           <div 
             key={template.id} 
             onClick={() => setSelected(template.id)}
-            className={`glass-card p-5 sm:p-8 rounded-2xl cursor-pointer transition-all relative border-2 ${selected === template.id ? 'border-indigo-600 bg-indigo-50/50 scale-[1.02]' : 'border-transparent hover:bg-slate-50'}`}
+            className={`glass-card p-5 sm:p-8 rounded-[1.5rem] cursor-pointer transition-all duration-300 relative border-2 ${
+              selected === template.id 
+                ? 'border-indigo-500 bg-indigo-50/80 shadow-[0_8px_30px_rgba(99,102,241,0.2)] scale-[1.03] transform' 
+                : 'border-transparent hover:border-slate-200 hover:bg-slate-50/80 hover:-translate-y-1'
+            }`}
           >
-            <div className="text-2xl sm:text-4xl mb-3">{template.icon}</div>
-            <h3 className="text-sm sm:text-xl font-bold mb-1 text-slate-800">{template.name}</h3>
-            <p className="text-[10px] sm:text-sm text-slate-500 line-clamp-2">{template.description}</p>
+            {/* Selection Checkmark Badge */}
+            {selected === template.id && (
+              <div className="absolute -top-3 -right-3 w-8 h-8 sm:w-10 sm:h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm sm:text-base shadow-lg border-4 border-white animate-fade-in z-10">
+                ✓
+              </div>
+            )}
+            
+            <div className={`text-3xl sm:text-5xl mb-4 transition-transform duration-300 ${selected === template.id ? 'scale-110' : ''}`}>
+              {template.icon}
+            </div>
+            <h3 className={`text-base sm:text-xl font-bold mb-1.5 transition-colors ${selected === template.id ? 'text-indigo-900' : 'text-slate-800'}`}>
+              {template.name}
+            </h3>
+            <p className={`text-[11px] sm:text-sm line-clamp-2 transition-colors ${selected === template.id ? 'text-indigo-600/80 font-medium' : 'text-slate-500'}`}>
+              {template.description}
+            </p>
           </div>
         ))}
       </div>

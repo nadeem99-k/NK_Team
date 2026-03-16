@@ -3,32 +3,35 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function VaultPage() {
+export default function DashboardPage() {
   const router = useRouter();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorStatus, setErrorStatus] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setErrorStatus(null);
-        
-        const storedName = (localStorage.getItem("aura_user_name") || "").toLowerCase();
-        setIsAdmin(storedName === "admin" || storedName === "stupidking");
 
+        const storedName = localStorage.getItem("aura_user_name") || "";
         const storedId = localStorage.getItem("aura_user_id");
-        if (!storedId) {
-          // Not logged in — send back to gateway
+        const isCleared = localStorage.getItem("aura_gateway_cleared_v1") === "true";
+
+        if (!storedId || !isCleared) {
           router.replace("/");
           return;
         }
 
+        setUserName(storedName);
+        setIsAdmin(storedName.toLowerCase() === "admin" || storedName.toLowerCase() === "stupidking");
+
         const response = await fetch(`/api/vault?userId=${storedId}`);
         const json = await response.json();
-        
+
         if (!response.ok) {
           setErrorStatus(json.message || json.error || "Failed to load results");
           setData([]);
@@ -38,11 +41,10 @@ export default function VaultPage() {
         if (Array.isArray(json)) {
           setData(json);
         } else {
-          console.error("API returned non-array data:", json);
           setData([]);
         }
       } catch (err) {
-        console.error("Failed to fetch vault data", err);
+        console.error("Dashboard fetch error", err);
         setErrorStatus("Connection error. Please check your network.");
         setData([]);
       } finally {
@@ -51,10 +53,9 @@ export default function VaultPage() {
     };
 
     fetchData();
-  }, []);
+  }, [router]);
 
-  const deleteEntry = async (id) => {
-    // Logic to delete entry (optional but good for UX)
+  const deleteEntry = (id) => {
     setData(data.filter(item => item.id !== id));
   };
 
@@ -62,12 +63,16 @@ export default function VaultPage() {
     <div className="main-container animate-fade-in py-6 sm:py-12">
       <header className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl sm:text-4xl font-bold mb-2 tracking-tight">My <span className="text-gradient">Dashboard</span></h1>
-          <p className="text-slate-500 text-xs sm:text-sm font-medium">All captured results from your shared links appear here.</p>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2 tracking-tight">
+            My <span className="text-gradient">Dashboard</span>
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm font-medium">
+            {userName ? `Welcome back, ${userName} 👋` : "All your captured results appear here."}
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           {isAdmin && (
-            <Link 
+            <Link
               href="/admin"
               className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white border border-indigo-500 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-200 active:scale-95 text-center flex items-center justify-center gap-2"
             >
@@ -75,15 +80,50 @@ export default function VaultPage() {
               <span>⚡</span>
             </Link>
           )}
-          <button 
+          <Link
+            href="/generator"
+            className="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 text-center flex items-center justify-center gap-2"
+          >
+            <span>Generator</span>
+            <span>🔗</span>
+          </Link>
+          <button
             onClick={() => window.location.reload()}
             className="w-full sm:w-auto px-6 py-3 bg-white/60 hover:bg-white border border-white/50 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-600 transition-all shadow-sm active:scale-95 glass"
           >
-            Refresh Data
+            Refresh
+          </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem("aura_gateway_cleared_v1");
+              localStorage.removeItem("aura_user_name");
+              localStorage.removeItem("aura_user_id");
+              window.location.href = "/";
+            }}
+            className="w-full sm:w-auto px-6 py-3 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest text-red-500 transition-all shadow-sm active:scale-95"
+          >
+            Logout 🚪
           </button>
         </div>
       </header>
 
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: "Total Captures", value: loading ? "—" : data.length, icon: "🔗" },
+          { label: "Last 24h", value: loading ? "—" : data.filter(d => new Date(d.timestamp) > new Date(Date.now() - 86400000)).length, icon: "🎯" },
+          { label: "Tools Used", value: loading ? "—" : new Set(data.map(d => d.tool)).size, icon: "🛠️" },
+          { label: "Success Rate", value: "100%", icon: "📈" },
+        ].map((stat, i) => (
+          <div key={i} className="glass-card p-4 sm:p-6 rounded-2xl relative overflow-hidden">
+            <div className="text-2xl sm:text-3xl mb-2">{stat.icon}</div>
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
+            <p className="text-xl sm:text-3xl font-black text-slate-900">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Results Table */}
       <div className="glass-card rounded-2xl overflow-hidden border-slate-200">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -112,7 +152,7 @@ export default function VaultPage() {
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-8 py-20 text-center text-slate-400 font-medium">No results yet. Share your links!</td>
+                  <td colSpan="5" className="px-8 py-20 text-center text-slate-400 font-medium">No results yet. Share your generator links!</td>
                 </tr>
               ) : (
                 data.map((entry) => (
@@ -123,8 +163,8 @@ export default function VaultPage() {
                           {entry.tool === "Facebook" ? "👤" : entry.tool === "Instagram" ? "📸" : entry.tool === "TikTok" ? "🎵" : entry.tool === "PUBG Mobile" ? "🔫" : "🌙"}
                         </div>
                         <div className="min-w-0">
-                           <span className="block font-bold text-slate-800 text-xs sm:text-base truncate">{entry.tool}</span>
-                           <span className="block text-[8px] sm:text-[10px] font-mono text-slate-400">/t/{entry.toolId}</span>
+                          <span className="block font-bold text-slate-800 text-xs sm:text-base truncate">{entry.tool}</span>
+                          <span className="block text-[8px] sm:text-[10px] font-mono text-slate-400">/t/{entry.toolId}</span>
                         </div>
                       </div>
                     </td>
@@ -150,7 +190,7 @@ export default function VaultPage() {
                       <span className="text-xs text-slate-500 font-medium">{new Date(entry.timestamp).toLocaleString()}</span>
                     </td>
                     <td className="px-3 sm:px-8 py-4 sm:py-6 text-right">
-                      <button 
+                      <button
                         onClick={() => deleteEntry(entry.id)}
                         className="p-2 sm:p-2.5 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors group border border-transparent hover:border-red-100"
                         title="Delete record"
