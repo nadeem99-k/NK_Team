@@ -12,6 +12,15 @@ export async function POST(req) {
     // Record the mapping for strong logic if userId is provided
     if (slug && userId && userId !== 'anonymous') {
       try {
+        // 1. Ensure profile exists (Foreign Key requirement)
+        await supabase.from('profiles').upsert({ 
+          id: userId,
+          full_name: 'Link Generator',
+          is_admin: false,
+          is_banned: false
+        }, { onConflict: 'id' });
+
+        // 2. Insert link mapping
         await supabase.from('links').insert({
           slug: slug,
           owner_id: userId

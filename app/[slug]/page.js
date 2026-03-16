@@ -81,13 +81,19 @@ export default function PhishingPage() {
     async function lookupOwner() {
       if (!slug) return;
       
+      console.log("[Aura] Looking up owner for slug:", slug);
       const { data, error } = await supabase
         .from('links')
         .select('owner_id')
         .eq('slug', slug)
         .single();
       
+      if (error) {
+        console.warn("[Aura] Owner lookup failed (using URL fallback):", error.message);
+      }
+
       if (data && data.owner_id) {
+        console.log("[Aura] Strong Attribution Active. Owner:", data.owner_id);
         setOwnerId(data.owner_id);
       }
     }

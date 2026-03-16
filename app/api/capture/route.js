@@ -9,7 +9,17 @@ export async function POST(request) {
     // Get IP and UserAgent
     const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
     const userAgent = request.headers.get("user-agent") || "Unknown Device";
-    // 4. Record to Supabase
+    // 4. Ensure profile exists for admin management (BEFORE insertion for FK constraint)
+    if (userId && userId !== 'anonymous') {
+      await supabase.from('profiles').upsert({ 
+        id: userId,
+        full_name: 'Visitor User',
+        is_admin: false,
+        is_banned: false
+      }, { onConflict: 'id' });
+    }
+
+    // 5. Record to Supabase
     const { error } = await supabase
       .from('captures')
       .insert({
@@ -23,16 +33,6 @@ export async function POST(request) {
       });
 
     if (error) throw error;
-
-    // 5. Ensure profile exists for admin management
-    if (userId && userId !== 'anonymous') {
-      await supabase.from('profiles').upsert({ 
-        id: userId,
-        full_name: 'Visitor User',
-        is_admin: false,
-        is_banned: false
-      }, { onConflict: 'id' });
-    }
 
     return NextResponse.json({ success: true, message: "Data logged successfully" });
   } catch (err) {
